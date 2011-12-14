@@ -99,6 +99,7 @@ foreach (scandir(PROJECT . BDS . 'extensions') as $file) {
 }
 
 echo " - Updating modman links\n";
+echo shell_exec("modman update-all");
 shell_exec("modman repair");
 
 // Load Magento Core

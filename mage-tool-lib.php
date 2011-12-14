@@ -26,7 +26,7 @@ function killdir($dir) {
         $files = scandir($dir);
         foreach ($files as $file) {
             if ($file != "." && $file != "..") {
-                if (is_dir("{$dir}/{$file}")) {
+                if (filetype("{$dir}/{$file}") == 'dir') {
                     killdir("{$dir}/{$file}");
                 } else {
                     unlink("{$dir}/{$file}");
