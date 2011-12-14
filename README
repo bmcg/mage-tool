@@ -1,0 +1,2 @@
+Proof of concept Magento build tool.  The idea is to seperate a Magento site from the Magento core from a repository
+perspective.  One of the goals is to easily test extension against new version of magento.
