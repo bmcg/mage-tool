@@ -1,8 +1,8 @@
 #!/usr/bin/php
 <?php
 /*
- *   Magento build tools By Brim
- *   Copyright (C) 2011  Brian McGilligan <brian@brimllc.com>
+ *   Magento build tools By Brim LLC
+ *   Copyright (C) 2011-2012  Brian McGilligan <brian@brimllc.com>
  *
  *   This program is free software: you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -26,14 +26,15 @@ define('BDS', DIRECTORY_SEPARATOR); // prevents redefine warning if we need to l
 $ds =  BDS;
 define('INSTALL_PATH', dirname(__FILE__));
 
-var_dump($argc, $argv);
+//var_dump($argc, $argv);
 
 if ($argc == 1) {
     die("Missing required argumets!\n");
 }
 
 if (!file_exists('mage-tools.ini')) {
-    die("Config file was not found!\n");
+    // Currently not required by all commands.
+    //die("Config file was not found!\n");
 }
 
 define('PROJECT', getcwd());
@@ -44,8 +45,11 @@ chdir(PROJECT);
 // setup vars
 $MAGE_REPO_ORIGIN   = null;
 $MAGE_VERSION       = null;
-$CONFIG             = parse_ini_file(PROJECT . $ds . 'mage-tools.ini', true);
-extract($CONFIG['general']);
+
+if (file_exists('mage-tools.ini')) {
+    $CONFIG             = parse_ini_file(PROJECT . $ds . 'mage-tools.ini', true);
+    extract($CONFIG['general']);
+}
 
 // Load our library functions.
 require INSTALL_PATH . BDS . "mage-tool-lib.php";
@@ -62,6 +66,7 @@ $command = $argv[1];
 switch($command) {
     case 'build':
     case 'upgrade':
+    case 'package':
         require INSTALL_PATH . BDS . "mage-tool-{$command}.php";
         break;
 

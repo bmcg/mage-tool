@@ -1,7 +1,7 @@
 <?php
 /*
- *   Magento build tools By Brim
- *   Copyright (C) 2011  Brian McGilligan <brian@brimllc.com>
+ *   Magento build tools By Brim LLC
+ *   Copyright (C) 2011-2012  Brian McGilligan <brian@brimllc.com>
  *
  *   This program is free software: you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
