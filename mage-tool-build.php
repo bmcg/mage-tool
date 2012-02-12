@@ -18,8 +18,17 @@
  */
 
 // Init Base Directories
-if (!file_exists(PROJECT . BDS . 'build')) {
-    mkdir(PROJECT . BDS . 'build');
+
+
+define('BUILD_DIR_REL', 'builds/' . date('Ymd-H'));
+define('BUILD_DIR', PROJECT . BDS . BUILD_DIR_REL);
+
+
+if (!file_exists(PROJECT . BDS . 'builds')) {
+    mkdir(PROJECT . BDS . 'builds');
+}
+if (!file_exists(BUILD_DIR)) {
+    mkdir(BUILD_DIR);
 }
 if (!file_exists(PROJECT . BDS . 'cache')) {
     mkdir(PROJECT . BDS . 'cache');
@@ -31,39 +40,43 @@ if (!file_exists(PROJECT . BDS . 'var')) {
 // Clone and update the repo, makes sure we have the latest versions
 $local_repo = PROJECT . BDS . 'cache'. BDS . 'magento-repo';
 if (!file_exists($local_repo)) {
-    echo " - Cloning Magento Repo\n";
-    echo shell_exec("git clone --mirror $MAGE_REPO_ORIGIN $local_repo");
-} else {
-    echo " - Updating Magento Repo\n";
-    echo shell_exec("git --git-dir=$local_repo  remote update");
+    mkdir($local_repo);
 }
 
 // Check if the version needs to change
-if (@file_get_contents(PROJECT . BDS . 'build' . BDS . 'VERSION') != $MAGE_VERSION) {
+if (@file_get_contents(BUILD_DIR) != $MAGE_VERSION) {
     echo " - Cleaning Magento Build\n";
     // clean build
-    killdir(PROJECT . BDS . 'build');
-    mkdir(PROJECT . BDS . 'build');
+    killdir(BUILD_DIR);
+    mkdir(BUILD_DIR);
 
     // checkout a fresh copy of magento
     echo " - Extracting Magento ${MAGE_VERSION}\n";
-    echo shell_exec("git --git-dir=$local_repo archive $MAGE_VERSION | tar -x -C " . PROJECT . "/build");
+
+    // Check if we have a cached archive.
+    $cachedFile = $local_repo . BDS . $MAGE_VERSION . $MAGE_EXT;
+    $remoteFile = $MAGE_REPO_BASE . $MAGE_VERSION . $MAGE_EXT;
+    if (!file_exists($cachedFile)) {
+        file_put_contents($cachedFile, file_get_contents($remoteFile));
+    }
+
+    echo shell_exec("tar -xjf $cachedFile -C " . BUILD_DIR . " -s /magento//");
 
     // link external var directory
-    if (file_exists(PROJECT . BDS . 'build' . BDS . 'media')) {
-        killdir(PROJECT . BDS . 'build' . BDS . 'media');
+    if (file_exists(BUILD_DIR . BDS . 'media')) {
+        killdir(BUILD_DIR . BDS . 'media');
     }
-    symlink(PROJECT . BDS . 'media', PROJECT . BDS . 'build' . BDS . 'media');
+    symlink(PROJECT . BDS . 'media', BUILD_DIR . BDS . 'media');
 
     // link external var directory
-    if (file_exists(PROJECT . BDS . 'build' . BDS . 'var')) {
-        killdir(PROJECT . BDS . 'build' . BDS . 'var');
+    if (file_exists(BUILD_DIR . BDS . 'var')) {
+        killdir(BUILD_DIR . BDS . 'var');
     }
-    symlink(PROJECT . BDS . 'var', PROJECT . BDS . 'build' . BDS . 'var');
+    symlink(PROJECT . BDS . 'var', BUILD_DIR . BDS . 'var');
 
     // Symlink in a local config file.
     if (!file_exists(PROJECT . BDS . 'config' . BDS . 'local.xml')) {
-        if (copy(PROJECT . BDS . 'build' . BDS . 'app' . BDS . 'etc' . BDS . 'local.xml.template',
+        if (copy(BUILD_DIR . BDS . 'app' . BDS . 'etc' . BDS . 'local.xml.template',
                 PROJECT . BDS . 'config' . BDS . 'local.xml')) {
         } else {
             echo " - Error Copying local template\n";
@@ -72,43 +85,42 @@ if (@file_get_contents(PROJECT . BDS . 'build' . BDS . 'VERSION') != $MAGE_VERSI
     }
     symlink(
         PROJECT . BDS . 'config' . BDS . 'local.xml',
-        PROJECT . BDS . 'build' . BDS . 'app' . BDS . 'etc' . BDS . 'local.xml'
+        BUILD_DIR . BDS . 'app' . BDS . 'etc' . BDS . 'local.xml'
     );
 
-    file_put_contents(PROJECT . BDS . 'build' . BDS . 'VERSION', $MAGE_VERSION);
+    if (file_exists(PROJECT . BDS . 'config' . BDS . 'robots.txt')) {
+        symlink(
+            PROJECT . BDS . 'config' . BDS . 'robots.txt',
+            BUILD_DIR . BDS . 'robots.txt'
+        );
+    }
+
+    file_put_contents(BUILD_DIR . BDS . 'VERSION', $MAGE_VERSION);
 }
 
 // init module manager
 if (!file_exists(PROJECT . BDS . '.modman')) {
-    echo shell_exec("modman init build");
+    symlink(PROJECT . BDS . 'extensions' . BDS, PROJECT . BDS . '.modman');
 }
+
+file_put_contents(PROJECT . BDS . '.modman' . BDS . '.basedir', BUILD_DIR_REL);
 
 echo " - Updating git submodules\n";
  shell_exec("git submodule init");
  shell_exec("git submodule update");
 
-// Link in modman extensions
-foreach (scandir(PROJECT . BDS . 'extensions') as $file) {
-    if ($file !=  '.' && $file != '..') {
-        if (is_dir(PROJECT . BDS . 'extensions' . BDS . $file) && file_exists(PROJECT . BDS . 'extensions' . BDS . $file . BDS . 'modman')) {
-            if (!file_exists(PROJECT . BDS . '.modman' . BDS . $file)) {
-                symlink(PROJECT . BDS . 'extensions' . BDS . $file, PROJECT . BDS . '.modman' . BDS . $file);
-            }
-        }
-    }
-}
 
 echo " - Updating modman links\n";
 echo shell_exec("modman update-all");
 shell_exec("modman repair");
 
 // Load Magento Core
-require PROJECT . BDS . 'build' . BDS . 'app' . BDS . 'Mage.php';
+require BUILD_DIR . BDS . 'app' . BDS . 'Mage.php';
 
 // Install defined modules from Magento Connect
 if (version_compare(Mage::getVersion(), '1.4.2.0') >= 0) {
     // Magento 1.4.2.0 +
-    chdir(PROJECT . BDS . 'build' );
+    chdir(BUILD_DIR);
     chmod('mage', 0755);
     shell_exec('./mage mage-setup');
 
@@ -135,3 +147,5 @@ if (version_compare(Mage::getVersion(), '1.4.2.0') >= 0) {
     // Before 1.4.2.0
 
 }
+
+symlink(BUILD_DIR, PROJECT . BDS . 'current');
