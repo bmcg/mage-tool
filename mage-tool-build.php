@@ -19,9 +19,28 @@
 
 // Init Base Directories
 
+if (isset($argv[2])) {
+    $env = $argv[2];
+} else {
+    $env = 'development';
+}
 
-define('BUILD_DIR_REL', 'builds/' . date('Ymd-H'));
-define('BUILD_DIR', PROJECT . BDS . BUILD_DIR_REL);
+switch ($env) {
+    case 'dev':
+    case 'development':
+        define('BUILD_DIR_REL', 'builds/development');
+        define('BUILD_DIR', PROJECT . BDS . BUILD_DIR_REL);
+        break;
+    case 'release':
+    case 'production':
+        define('BUILD_DIR_REL', 'builds/' . date('Ymd-H'));
+        define('BUILD_DIR', PROJECT . BDS . BUILD_DIR_REL);
+        break;
+
+    default:
+        die('Unknown Environment');
+        break;
+}
 
 
 if (!file_exists(PROJECT . BDS . 'builds')) {
@@ -62,17 +81,23 @@ if (@file_get_contents(BUILD_DIR) != $MAGE_VERSION) {
 
     echo shell_exec("tar -xjf $cachedFile -C " . BUILD_DIR . " -s /magento//");
 
+    if (file_exists(PROJECT . BDS . '..' . BDS . 'shared')) {
+        $sharedMedia = realpath(PROJECT . BDS . '..' . BDS . 'shared');
+    } else {
+        $sharedMedia = PROJECT;
+    }
+
     // link external var directory
     if (file_exists(BUILD_DIR . BDS . 'media')) {
         killdir(BUILD_DIR . BDS . 'media');
     }
-    symlink(PROJECT . BDS . 'media', BUILD_DIR . BDS . 'media');
+    symlink($sharedMedia . BDS . 'media', BUILD_DIR . BDS . 'media');
 
     // link external var directory
     if (file_exists(BUILD_DIR . BDS . 'var')) {
         killdir(BUILD_DIR . BDS . 'var');
     }
-    symlink(PROJECT . BDS . 'var', BUILD_DIR . BDS . 'var');
+    symlink($sharedMedia . BDS . 'var', BUILD_DIR . BDS . 'var');
 
     // Symlink in a local config file.
     if (!file_exists(PROJECT . BDS . 'config' . BDS . 'local.xml')) {
@@ -146,6 +171,10 @@ if (version_compare(Mage::getVersion(), '1.4.2.0') >= 0) {
 } else {
     // Before 1.4.2.0
 
+}
+
+if (file_exists(PROJECT . BDS . 'current')) {
+    unlink(PROJECT . BDS . 'current');
 }
 
 symlink(BUILD_DIR, PROJECT . BDS . 'current');

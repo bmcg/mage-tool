@@ -67,6 +67,7 @@ switch($command) {
     case 'build':
     case 'upgrade':
     case 'package':
+    case 'db':
         require INSTALL_PATH . BDS . "mage-tool-{$command}.php";
         break;
 
