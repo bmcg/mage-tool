@@ -79,7 +79,7 @@ if (@file_get_contents(BUILD_DIR) != $MAGE_VERSION) {
         file_put_contents($cachedFile, file_get_contents($remoteFile));
     }
 
-    echo shell_exec("tar -xjf $cachedFile -C " . BUILD_DIR . " -s /magento//");
+    echo shell_exec("tar -xjf $cachedFile -C " . BUILD_DIR . " --strip-components=1");
 
     if (file_exists(PROJECT . BDS . '..' . BDS . 'shared')) {
         $sharedMedia = realpath(PROJECT . BDS . '..' . BDS . 'shared');
