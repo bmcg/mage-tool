@@ -63,7 +63,7 @@ if (!file_exists($local_repo)) {
 }
 
 // Check if the version needs to change
-if (@file_get_contents(BUILD_DIR) != $MAGE_VERSION) {
+if (@file_get_contents(BUILD_DIR . BDS . 'VERSION') != $MAGE_VERSION) {
     echo " - Cleaning Magento Build\n";
     // clean build
     killdir(BUILD_DIR);
@@ -156,12 +156,33 @@ if (version_compare(Mage::getVersion(), '1.4.2.0') >= 0) {
             $installed_extensions = shell_exec('./mage list-installed');
             while (($line = fgets($fp)) != false) {
                 list($channel, $extension) = explode(' ', $line);
-                if (strpos($installed_extensions, $extension) === false) {
-                    echo " - Installing $extension\n";
-                    shell_exec("./mage install $channel $extension");
+
+                if ($channel == 'download') {
+                    $local_filename = pathinfo($extension, PATHINFO_BASENAME);
+                    $local_extension= pathinfo($extension, PATHINFO_EXTENSION);
+
+                    echo " - Installing $local_filename\n";
+
+                    if (file_exists($local_filename)) {
+                        unlink($local_filename);
+                    }
+
+                    file_put_contents($local_filename, file_get_contents($extension));
+
+                    if ($local_extension == 'zip') {
+                        $l = shell_exec("unzip -o $local_filename");
+                        var_dump($l);
+                    } else {
+                        shell_exec("./mage install-file $local_filename");
+                    }
                 } else {
-                    echo " - Upgrading $extension\n";
-                    shell_exec("./mage upgrade $channel $extension");
+                    if (strpos($installed_extensions, $extension) === false) {
+                        echo " - Installing $extension\n";
+                        shell_exec("./mage install $channel $extension");
+                    } else {
+                        echo " - Upgrading $extension\n";
+                        shell_exec("./mage upgrade $channel $extension");
+                    }
                 }
             }
             fclose($fp);
