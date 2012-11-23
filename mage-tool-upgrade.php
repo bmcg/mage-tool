@@ -22,7 +22,7 @@ if (!file_exists(PROJECT . BDS . 'current' . BDS . 'app' . BDS . 'Mage.php')) {
     die("Unabled to find a Magento build!\n");
 }
 
-require PROJECT . BDS . 'current' . BDS . 'app' . BDS . 'Mage.php';
+require_once PROJECT . BDS . 'current' . BDS . 'app' . BDS . 'Mage.php';
 
 set_time_limit(0);
 ini_set('memory_limit', '2G');
@@ -32,7 +32,7 @@ $start = microtime(true);
 
 $app = Mage::app('admin');
 echo "\nLoaded App";
-$app->cleanCache();
+$app->getCache()->clean();
 echo "\nCleaned Cache";
 
 // Will trigger the actual upgrade.

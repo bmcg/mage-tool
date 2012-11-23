@@ -140,7 +140,7 @@ echo shell_exec("modman update-all");
 shell_exec("modman repair");
 
 // Load Magento Core
-require BUILD_DIR . BDS . 'app' . BDS . 'Mage.php';
+require_once BUILD_DIR . BDS . 'app' . BDS . 'Mage.php';
 
 // Install defined modules from Magento Connect
 if (version_compare(Mage::getVersion(), '1.4.2.0') >= 0) {
@@ -150,13 +150,15 @@ if (version_compare(Mage::getVersion(), '1.4.2.0') >= 0) {
     shell_exec('./mage mage-setup');
 
     $connect_file = PROJECT . BDS . 'extensions' . BDS . 'magento-connect';
-    if (file_exists($connect_file)) {
-        if (($fp = fopen($connect_file, 'r')) != null) {
-            //
-            $installed_extensions = shell_exec('./mage list-installed');
-            while (($line = fgets($fp)) != false) {
-                list($channel, $extension) = explode(' ', $line);
+    $connectSection = $CONFIG['connect-extensions'];
+    if (isset($CONFIG['extensions'])) {
+        $installed_extensions   = shell_exec('./mage list-installed');
+        $extensions             = $CONFIG['extensions'];
 
+        foreach ($extensions as $channel => $extensionList) {
+            $extensionItems = explode(',', $extensionList);
+
+            foreach ($extensionItems as $extension) {
                 if ($channel == 'download') {
                     $local_filename = pathinfo($extension, PATHINFO_BASENAME);
                     $local_extension= pathinfo($extension, PATHINFO_EXTENSION);
@@ -185,7 +187,7 @@ if (version_compare(Mage::getVersion(), '1.4.2.0') >= 0) {
                     }
                 }
             }
-            fclose($fp);
+
         }
     }
 
@@ -194,8 +196,16 @@ if (version_compare(Mage::getVersion(), '1.4.2.0') >= 0) {
 
 }
 
+touch(BUILD_DIR . BDS . 'maintenance.flag');
+
 if (file_exists(PROJECT . BDS . 'current')) {
     unlink(PROJECT . BDS . 'current');
 }
 
 symlink(BUILD_DIR, PROJECT . BDS . 'current');
+
+chdir('../../');
+echo shell_exec("mage-tool.php upgrade");
+chdir(BUILD_DIR);
+
+unlink(BUILD_DIR . BDS . 'maintenance.flag');
