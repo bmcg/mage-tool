@@ -56,6 +56,8 @@ if (!file_exists(PROJECT . BDS . 'var')) {
     mkdir(PROJECT . BDS . 'var');
 }
 
+touch(PROJECT . BDS . 'current' . BDS . 'maintenance.flag');
+
 // Clone and update the repo, makes sure we have the latest versions
 $local_repo = PROJECT . BDS . 'cache'. BDS . 'magento-repo';
 if (!file_exists($local_repo)) {
