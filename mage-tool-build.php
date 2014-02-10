@@ -18,30 +18,7 @@
  */
 
 // Init Base Directories
-
-if (isset($argv[2])) {
-    $env = $argv[2];
-} else {
-    $env = 'development';
-}
-
-switch ($env) {
-    case 'dev':
-    case 'development':
-        define('BUILD_DIR_REL', 'builds/development');
-        define('BUILD_DIR', PROJECT . BDS . BUILD_DIR_REL);
-        break;
-    case 'release':
-    case 'production':
-        define('BUILD_DIR_REL', 'builds/' . date('Ymd-H'));
-        define('BUILD_DIR', PROJECT . BDS . BUILD_DIR_REL);
-        break;
-
-    default:
-        die('Unknown Environment');
-        break;
-}
-
+include_once dirname(__FILE__) . BDS . 'mage-tool-set-common.php';
 
 if (!file_exists(PROJECT . BDS . 'builds')) {
     mkdir(PROJECT . BDS . 'builds');
@@ -141,62 +118,9 @@ echo " - Updating modman links\n";
 echo shell_exec("modman update-all");
 shell_exec("modman repair");
 
-// Load Magento Core
-require_once BUILD_DIR . BDS . 'app' . BDS . 'Mage.php';
 
-// Install defined modules from Magento Connect
-if (version_compare(Mage::getVersion(), '1.4.2.0') >= 0) {
-    // Magento 1.4.2.0 +
-    chdir(BUILD_DIR);
-    chmod('mage', 0755);
-    shell_exec('./mage mage-setup');
+shell_exec("php mage-tool-deploy-connect.php");
 
-    $connect_file = PROJECT . BDS . 'extensions' . BDS . 'magento-connect';
-    $connectSection = $CONFIG['connect-extensions'];
-    if (isset($CONFIG['extensions'])) {
-        $installed_extensions   = shell_exec('./mage list-installed');
-        $extensions             = $CONFIG['extensions'];
-
-        foreach ($extensions as $channel => $extensionList) {
-            $extensionItems = explode(',', $extensionList);
-
-            foreach ($extensionItems as $extension) {
-                if ($channel == 'download') {
-                    $local_filename = pathinfo($extension, PATHINFO_BASENAME);
-                    $local_extension= pathinfo($extension, PATHINFO_EXTENSION);
-
-                    echo " - Installing $local_filename\n";
-
-                    if (file_exists($local_filename)) {
-                        unlink($local_filename);
-                    }
-
-                    file_put_contents($local_filename, file_get_contents($extension));
-
-                    if ($local_extension == 'zip') {
-                        $l = shell_exec("unzip -o $local_filename");
-                        var_dump($l);
-                    } else {
-                        shell_exec("./mage install-file $local_filename");
-                    }
-                } else {
-                    if (strpos($installed_extensions, $extension) === false) {
-                        echo " - Installing $extension\n";
-                        shell_exec("./mage install $channel $extension");
-                    } else {
-                        echo " - Upgrading $extension\n";
-                        shell_exec("./mage upgrade $channel $extension");
-                    }
-                }
-            }
-
-        }
-    }
-
-} else {
-    // Before 1.4.2.0
-
-}
 
 touch(BUILD_DIR . BDS . 'maintenance.flag');
 
