@@ -42,6 +42,7 @@ if (file_exists($modConfigFilename)) {
 $packageName = $modName;
 if ($modVersion) {
     $packageName .= '-' . $modVersion;
+    $packageNameVersion = $packageName;
 }
 $packageName .= '.zip';
 $packagePath = BP . '/'. $packageName;
@@ -55,8 +56,16 @@ process_modman_file($za, $modmanConfigFilename);
 if (file_exists(BP . '/license.txt')) {
     $za->addFile(BP . '/license.txt', $modName .'-license.txt');
 }
+if (file_exists(BP . '/license.html')) {
+    $za->addFile(BP . '/license.html', $modName .'-license.html');
+}
 if (file_exists(BP . '/license.pdf')) {
     $za->addFile(BP . '/license.pdf', $modName . '-license.pdf');
+}
+
+if (file_exists(BP . '/docs/user-guide.pdf')) {
+    $za->addFile(BP . '/docs/user-guide.pdf', $modName . '-user-guide.pdf');
+    copy(BP . '/docs/user-guide.pdf', BP . '/'. $modName . '-user-guide.pdf');
 }
 
 $za->close();
