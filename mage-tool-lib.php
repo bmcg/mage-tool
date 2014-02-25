@@ -39,6 +39,22 @@ function killdir($dir) {
 }
 
 class ZipArchive_Custom extends ZipArchive {
+
+    protected $_licenseText = null;
+
+    public function setLicenseText($text) {
+        $this->_licenseText = $text;
+    }
+
+    public function addFile($filename, $localname = NULL, $start = 0, $length = 0) {
+
+        $content = file_get_contents($filename);
+
+        $content = str_replace("/** @INSERT_LICENSE_TEXT_HERE */", $this->_licenseText, $content);
+
+        $this->addFromString($localname, $content);
+    }
+
     public function addDir($path, $localPath=null) {
         if ($localPath == null) { $localPath = $path; }
 

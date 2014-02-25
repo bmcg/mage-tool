@@ -51,6 +51,10 @@ echo "\nWriting package: $packageName\n";
 $za = new ZipArchive_Custom();
 $za->open($packagePath, ZipArchive::OVERWRITE);
 
+if (file_exists(BP . '/license-header.txt')) {
+    $za->setLicenseText(file_get_contents(BP. '/license-header.txt'));
+}
+
 process_modman_file($za, $modmanConfigFilename);
 
 if (file_exists(BP . '/license.txt')) {
