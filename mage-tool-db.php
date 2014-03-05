@@ -51,7 +51,12 @@ function dbBackup() {
 
     $outFile = PROJECT . BDS . 'backups' . BDS . date('Ymd-His') . '-' . $dbName . '.sql';
 
-    $command = "mysqldump --single-transaction -h{$dbHost} -u{$dbUser} -p{$dbPass} $dbName > $outFile ";
+    $args = '';
+    if ($dbPass) {
+        $args .= " -p{$dbPass} ";
+    }
+
+    $command = "mysqldump --single-transaction -h{$dbHost} -u{$dbUser} $args $dbName > $outFile ";
     $output = shell_exec($command);
 
     return $outFile;

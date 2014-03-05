@@ -32,21 +32,22 @@ if (file_exists($path . '/mage-tools.ini')) {
             break;
 
         default:
-            die('Unknown Environment');
             break;
     }
 
-    // setup vars
-    $MAGE_REPO_ORIGIN   = null;
-    $MAGE_VERSION       = null;
+    if (defined('BUILD_DIR')) {
+        // setup vars
+        $MAGE_REPO_ORIGIN   = null;
+        $MAGE_VERSION       = null;
 
-    if (file_exists(PROJECT . DIRECTORY_SEPARATOR . 'mage-tools.ini')) {
-        $CONFIG             = parse_ini_file(PROJECT . DIRECTORY_SEPARATOR . 'mage-tools.ini', true);
-        extract($CONFIG['general']);
-    }
+        if (file_exists(PROJECT . DIRECTORY_SEPARATOR . 'mage-tools.ini')) {
+            $CONFIG             = parse_ini_file(PROJECT . DIRECTORY_SEPARATOR . 'mage-tools.ini', true);
+            extract($CONFIG['general']);
+        }
 
-    // Load Magento Core
-    if (file_exists(BUILD_DIR . DIRECTORY_SEPARATOR . 'app' . DIRECTORY_SEPARATOR . 'Mage.php')) {
-        require_once BUILD_DIR . DIRECTORY_SEPARATOR . 'app' . DIRECTORY_SEPARATOR . 'Mage.php';
+        // Load Magento Core
+        if (file_exists(BUILD_DIR . DIRECTORY_SEPARATOR . 'app' . DIRECTORY_SEPARATOR . 'Mage.php')) {
+            require_once BUILD_DIR . DIRECTORY_SEPARATOR . 'app' . DIRECTORY_SEPARATOR . 'Mage.php';
+        }
     }
 }
