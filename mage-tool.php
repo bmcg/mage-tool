@@ -2,7 +2,7 @@
 <?php
 /*
  *   Magento build tools By Brim LLC
- *   Copyright (C) 2011-2012  Brian McGilligan <brian@brimllc.com>
+ *   Copyright (C) 2011-2014  Brian McGilligan <brian@brimllc.com>
  *
  *   This program is free software: you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -32,24 +32,7 @@ if ($argc == 1) {
     die("Missing required argumets!\n");
 }
 
-if (!file_exists('mage-tools.ini')) {
-    // Currently not required by all commands.
-    //die("Config file was not found!\n");
-}
-
-define('PROJECT', getcwd());
-
-// Commands need to be run from the project dir.
-chdir(PROJECT);
-
-// setup vars
-$MAGE_REPO_ORIGIN   = null;
-$MAGE_VERSION       = null;
-
-if (file_exists('mage-tools.ini')) {
-    $CONFIG             = parse_ini_file(PROJECT . $ds . 'mage-tools.ini', true);
-    extract($CONFIG['general']);
-}
+require_once INSTALL_PATH . DIRECTORY_SEPARATOR . 'mage-tool-set-common.php';
 
 // Load our library functions.
 require INSTALL_PATH . BDS . "mage-tool-lib.php";

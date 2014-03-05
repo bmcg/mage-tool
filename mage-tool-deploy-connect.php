@@ -5,13 +5,9 @@
  * Date: 2/10/14
  * Time: 2:24 PM
  */
- 
 
-include_once dirname(__FILE__) . BDS . 'mage-tool-set-common.php';
+include_once dirname(__FILE__) . DIRECTORY_SEPARATOR . 'mage-tool-set-common.php';
 
-
-// Load Magento Core
-require_once BUILD_DIR . BDS . 'app' . BDS . 'Mage.php';
 
 // Install defined modules from Magento Connect
 if (version_compare(Mage::getVersion(), '1.4.2.0') >= 0) {
@@ -20,11 +16,9 @@ if (version_compare(Mage::getVersion(), '1.4.2.0') >= 0) {
     chmod('mage', 0755);
     shell_exec('./mage mage-setup');
 
-    $connect_file = PROJECT . BDS . 'extensions' . BDS . 'magento-connect';
-    $connectSection = $CONFIG['connect-extensions'];
-    if (isset($CONFIG['extensions'])) {
+    if (isset($CONFIG['connect'])) {
         $installed_extensions   = shell_exec('./mage list-installed');
-        $extensions             = $CONFIG['extensions'];
+        $extensions             = $CONFIG['connect'];
 
         foreach ($extensions as $channel => $extensionList) {
             $extensionItems = explode(',', $extensionList);
@@ -58,11 +52,8 @@ if (version_compare(Mage::getVersion(), '1.4.2.0') >= 0) {
                     }
                 }
             }
-
         }
     }
-
 } else {
     // Before 1.4.2.0
-
 }

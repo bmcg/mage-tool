@@ -109,29 +109,69 @@ if (!file_exists(PROJECT . BDS . '.modman')) {
 
 file_put_contents(PROJECT . BDS . '.modman' . BDS . '.basedir', BUILD_DIR_REL);
 
-echo " - Updating git submodules\n";
- shell_exec("git submodule init");
- shell_exec("git submodule update");
+// Submoules has proven very difficult mainly due to the fact that they checkout as HEAD.
+//echo " - Updating git submodules\n";
+// shell_exec("git submodule init");
+// shell_exec("git submodule update");
 
 
 echo " - Updating modman links\n";
-echo shell_exec("modman update-all");
+$modmanRepos        = $CONFIG['modman'];
+$installedModules   = explode("\n", shell_exec("modman list"));
+foreach ($modmanRepos as $name => $repo) {
+    chdir(PROJECT);
+
+    @list($repo, $branch) = explode(',', $repo);
+
+    $args = '';
+    if (!empty($branch)) {
+        $args .= ' --branch ' . $branch;
+    }
+
+    if (!in_array($name, $installedModules)) {
+        passthru("modman clone {$name} {$repo} {$args}");
+
+    } else {
+        chdir(PROJECT . "/.modman/{$name}");
+
+        $statusOutput = shell_exec("git status -s");
+        if ($statusOutput) {
+            // Stash Output
+            $timeStamp = date('Y-m-d h:i:s');
+            passthru("git stash save 'MAGE-BUILD-TOOL AUTO-SAVE {$timeStamp}'");
+        }
+
+        passthru("git checkout {$branch}");
+
+        // checkout against branch name and manually checkout a new one if needed
+        passthru("modman update {$name}");
+    }
+}
+chdir(PROJECT);
+
+// init all modman repos
+shell_exec("modman deploy-all"); // Handles local modman files.
 shell_exec("modman repair");
 
+echo " - Deploying magento connect \n";
+$cmd = "php " . INSTALL_PATH . BDS . "mage-tool-deploy-connect.php";
+passthru($cmd);
 
-shell_exec("php mage-tool-deploy-connect.php");
 
-
+echo " - Starting Magento upgrade\n";
+// turns Magento off
 touch(BUILD_DIR . BDS . 'maintenance.flag');
 
+// link in the latest build
 if (file_exists(PROJECT . BDS . 'current')) {
     unlink(PROJECT . BDS . 'current');
 }
-
 symlink(BUILD_DIR, PROJECT . BDS . 'current');
 
-chdir('../../');
+// upgrade
+chdir(PROJECT);
 echo shell_exec("mage-tool.php upgrade");
-chdir(BUILD_DIR);
 
+// turn the site back on
+chdir(BUILD_DIR);
 unlink(BUILD_DIR . BDS . 'maintenance.flag');

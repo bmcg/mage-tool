@@ -18,11 +18,13 @@
  */
 
 
-if (!file_exists(PROJECT . BDS . 'current' . BDS . 'app' . BDS . 'Mage.php')) {
-    die("Unabled to find a Magento build!\n");
-}
+if (!class_exists('Mage')) {
+    if (!file_exists(PROJECT . BDS . 'current' . BDS . 'app' . BDS . 'Mage.php')) {
+        die("Unabled to find a Magento build!\n");
+    }
 
-require_once PROJECT . BDS . 'current' . BDS . 'app' . BDS . 'Mage.php';
+    require_once PROJECT . BDS . 'current' . BDS . 'app' . BDS . 'Mage.php';
+}
 
 set_time_limit(0);
 ini_set('memory_limit', '2G');
