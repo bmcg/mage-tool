@@ -154,7 +154,7 @@ shell_exec("modman deploy-all"); // Handles local modman files.
 shell_exec("modman repair");
 
 echo " - Deploying magento connect \n";
-$cmd = "php " . INSTALL_PATH . BDS . "mage-tool-deploy-connect.php";
+$cmd = "export BUILD_DIR='" .BUILD_DIR. "' && php " . INSTALL_PATH . BDS . "mage-tool-deploy-connect.php";
 passthru($cmd);
 
 
