@@ -66,7 +66,9 @@ if (file_exists(BP . '/license.html')) {
 if (file_exists(BP . '/license.pdf')) {
     $za->addFile(BP . '/license.pdf', $modName . '-license.pdf');
 }
-
+if (file_exists(BP . '/README')) {
+    $za->addFile(BP . '/README', 'README');
+}
 if (file_exists(BP . '/docs/user-guide.pdf')) {
     $za->addFile(BP . '/docs/user-guide.pdf', $modName . '-user-guide.pdf');
     copy(BP . '/docs/user-guide.pdf', BP . '/'. $modName . '-user-guide.pdf');

@@ -52,6 +52,7 @@ switch($command) {
     case 'package':
     case 'db':
     case 'deploy-connect':
+    case 'apc-clean':
         require INSTALL_PATH . BDS . "mage-tool-{$command}.php";
         break;
 

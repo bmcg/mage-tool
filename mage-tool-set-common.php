@@ -13,12 +13,18 @@ if (file_exists($path . '/mage-tools.ini')) {
     chdir(PROJECT);
 
     if (getenv('BUILD_DIR')) {
-        define('BUILD_DIR', getenv('BUILD_DIR'));
+        $buildDir = getenv('BUILD_DIR');
+        define('BUILD_DIR_REL', 'builds/' . pathinfo($buildDir, PATHINFO_BASENAME));
+        define('BUILD_DIR', $buildDir);
     } else {
         if (isset($argv[2])) {
             $env = $argv[2];
         } else {
-            $env = 'development';
+            if ($argv[1] == 'build') {
+                $env = 'development';
+            } else {
+                $env = 'current';
+            }
         }
 
         switch ($env) {
@@ -26,18 +32,20 @@ if (file_exists($path . '/mage-tools.ini')) {
             case 'development':
                 define('BUILD_DIR_REL', 'builds/development');
                 define('BUILD_DIR', PROJECT . DIRECTORY_SEPARATOR . BUILD_DIR_REL);
+                define('ENVIRONMENT', 'development');
                 break;
             case 'release':
             case 'production':
                 define('BUILD_DIR_REL', 'builds/' . date('Ymd-H'));
                 define('BUILD_DIR', PROJECT . DIRECTORY_SEPARATOR . BUILD_DIR_REL);
+                define('ENVIRONMENT', 'production');
                 break;
 
             default:
+                define('BUILD_DIR', PROJECT . DIRECTORY_SEPARATOR . 'current');
                 break;
         }
     }
-
 
     // setup vars
     $MAGE_REPO_ORIGIN   = null;
