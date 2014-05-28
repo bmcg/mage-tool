@@ -33,7 +33,9 @@ if (!file_exists(PROJECT . BDS . 'var')) {
     mkdir(PROJECT . BDS . 'var');
 }
 
-touch(PROJECT . BDS . 'current' . BDS . 'maintenance.flag');
+if (file_exists(PROJECT . BDS . 'current')) {
+    touch(PROJECT . BDS . 'current' . BDS . 'maintenance.flag');
+}
 
 // Clone and update the repo, makes sure we have the latest versions
 $local_repo = PROJECT . BDS . 'cache'. BDS . 'magento-repo';
@@ -160,6 +162,8 @@ foreach ($modmanRepos as $name => $repo) {
             $timeStamp = date('Y-m-d h:i:s');
             passthru("git stash save 'MAGE-BUILD-TOOL AUTO-SAVE {$timeStamp}'");
         }
+
+        passthru("git fetch --tags");
 
         // get checkout'd out branch and compare with set branch to see if we need to checkout
         $currentBranchName = trim(shell_exec("git rev-parse --abbrev-ref HEAD"));
